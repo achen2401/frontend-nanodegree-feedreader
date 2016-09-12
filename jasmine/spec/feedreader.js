@@ -34,7 +34,6 @@ $(function() {
          it('each feed has url',function() {
             allFeeds.forEach(function(feed) {
                 expect(feed.url).toBeDefined();
-                expect(feed.url).not.toBe(null);
                 expect(feed.url).not.toBe('');
             });
          });
@@ -47,7 +46,6 @@ $(function() {
          it('each feed has name',function() {
             allFeeds.forEach(function(feed) {
                 expect(feed.name).toBeDefined();
-                expect(feed.name).not.toBe(null);
                 expect(feed.name).not.toBe('');
             });
          });
@@ -92,16 +90,12 @@ $(function() {
          * the use of Jasmine's beforeEach and asynchronous done() function.
          */
          beforeEach(function(done) {
-            setTimeout(function() {
-              loadFeed(0);
-              done();
-            }, 1000);
+              loadFeed(0, function() { done(); } );
          });
 
-         it(".feed container should have at least one .entry element", function(done) {
+         it(".feed container should have at least one .entry element", function() {
             var entries = $('.feed').find('.entry'); //get the entries within the feed container
             expect(entries.length).toBeGreaterThan(0);
-            done();
          });
 
     });
@@ -116,28 +110,25 @@ $(function() {
          * Remember, loadFeed() is asynchronous.
          */
 
-         //title and feed content before new feed is loaded
-         var currentTitle = $(".header-title").text();
-         var currentFeedContent = $(".feed").html();
-         //console.log("currentTitle: " + currentTitle);
-         //console.log("currentFeedContent: " + currentFeedContent.length);
+         //feed contents to be compared;
+         var currentFeedContent, loadedFeedContent;
 
          beforeEach(function(done) {
-            setTimeout(function() {
-              loadFeed(0);
-              done();
-            }, 1000);
+            loadFeed(0, function() {
+                currentFeedContent = $('.feed').html(); //assign the first feed content
+                //in call back make the second loadFeed() function call
+                loadFeed(1, function() {
+                    loadedFeedContent = $('.feed').html();
+                    done(); //let Jasmine knows when the second feed is loaded
+                });
+            });
          });
 
-         it("loading new feed should change content", function(done) {
-            var loadedTitle = $(".header-title").text();
-            var loadedFeedContent = $(".feed").html();
-            //console.log("loadedTitle: " + loadedTitle);
-            //console.log("loadedFeedContent: " + loadedFeedContent.length);
-            //for there to be a change, newly loaded title and feed content will need to change from previously saved title and feed content
-            expect(loadedTitle).not.toEqual(currentTitle);
-            expect(loadedFeedContent.length).not.toEqual(currentFeedContent.length);
-            done();
+         it('loading new feed should change content', function() {
+            //console.log("loaded: " + loadedFeedContent);
+            //console.log("current: " + currentFeedContent);
+            expect(loadedFeedContent).not.toBe(currentFeedContent);
+
          });
 
     });
